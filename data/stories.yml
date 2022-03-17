@@ -2,6 +2,6 @@ version: "2.0"
 stories:
 - story: simple_story_without_checkpoint
   steps:
-  - intent: utter_feeling
+  - intent: greetings
   - action: utter_feeling
   - action: utter_feeling
