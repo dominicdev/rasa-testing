@@ -1,31 +1,47 @@
-version: "2.0"
-
+version: "3.0"
 rules:
-  - rule: activate subscribe form
+  - rule: handoff intent from other bot's handoff triggers greeting
     steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
+    - intent: handoff
+    - action: utter_greet
 
-  - rule: submit form
+  - rule: Ask the user to rephrase whenever they send a message with low NLU confidence
+    steps:
+    - intent: nlu_fallback
+    - action: utter_default
+
+  - rule: answer bot challenge
+    steps:
+    - intent: bot_challenge
+    - action: utter_iamabot
+
+  - rule: start open incident form
+    steps:
+    - or:
+      - intent: open_incident
+      - intent: password_reset
+      - intent: problem_email
+    - action: open_incident_form
+    - active_loop: open_incident_form
+
+  - rule: submit open incident form
     condition:
-      - active_loop: newsletter_form
+      - active_loop: open_incident_form
     steps:
-      - action: newsletter_form
-      - active_loop: null
-      - action: utter_subscribed
-      - action: submit_newsletter_form
+    - action: open_incident_form
+    - active_loop: null
+    - action: action_open_incident
 
-  - rule: once a week
+  - rule: start incident status form
     steps:
-      - slot_was_set:
-          - frequency: once a week
-      - intent: ask_price
-      - action: utter_price_for_once_a_week
+    - intent: incident_status
+    - action: incident_status_form
+    - active_loop: incident_status_form
 
-  - rule: twice a week
+  - rule: submit incident status form
+    condition:
+      - active_loop: incident_status_form
     steps:
-      - slot_was_set:
-          - frequency: twice a week
-      - intent: ask_price
-      - action: utter_price_for_twice_a_week
+    - action: incident_status_form
+    - active_loop: null
+    - action: action_check_incident_status

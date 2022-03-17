@@ -1,162 +1,106 @@
-version: "2.0"
-
+version: "3.0"
 stories:
-  - story: happy path
-    steps:
-      - intent: greet
-      - action: utter_greet
-      - intent: mood_great
-      - action: utter_happy
 
-  - story: newsletter form continue
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - intent: chitchat
-      - action: utter_ask_continue
-      - intent: affirm
-      - action: newsletter_form
+- story: answer out of scope
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
 
-  - story: newsletter form stop
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - intent: chitchat
-      - action: utter_ask_continue
-      - intent: deny
-      - action: action_deactivate_loop
-      - active_loop: null
+- story: give help
+  steps:
+  - intent: help
+  - action: utter_help
 
-  - story: interactive_story_1
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - requested_slot: email
-      - intent: chitchat
-      - action: utter_ask_continue
-      - intent: affirm
-      - action: newsletter_form
-      - slot_was_set:
-          - requested_slot: email
-      - slot_was_set:
-          - requested_slot: frequency
-      - intent: chitchat
-      - action: utter_ask_continue
-      - intent: affirm
-      - action: newsletter_form
-      - slot_was_set:
-          - requested_slot: frequency
-      - active_loop: null
-      - action: utter_subscribed
-      - action: submit_newsletter_form
+- story: thank
+  steps:
+  - intent: thank
+  - action: utter_welcome
 
-  - story: once a week
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - frequency: once a week
-      - intent: ask_price
-      - action: utter_price_for_once_a_week
-      - action: newsletter_form
+- story: greet + give info
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - action: utter_help
 
-  - story: twice a week
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - frequency: twice a week
-      - intent: ask_price
-      - action: utter_price_for_twice_a_week
-      - action: newsletter_form
+- story: say goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
 
-  - story: explain email
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - requested_slot: email
-      - intent: explain
-      - action: utter_explain_email
-      - action: newsletter_form
+- story: open incident form interrupted
+  steps:
+  - or:
+    - intent: open_incident
+    - intent: password_reset
+    - intent: problem_email
+  - action: open_incident_form
+  - active_loop: open_incident_form
+  - intent: help
+  - action: utter_help
+  - action: open_incident_form
+  - active_loop: null
+  - action: action_open_incident
 
-  - story: explain frequency
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - requested_slot: email
-      - slot_was_set:
-          - requested_slot: frequency
-      - intent: explain
-      - action: utter_explain_frequency
-      - action: newsletter_form
+- story: open incident form interrupted
+  steps:
+  - or:
+    - intent: open_incident
+    - intent: password_reset
+    - intent: problem_email
+  - action: open_incident_form
+  - active_loop: open_incident_form
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+  - action: open_incident_form
+  - active_loop: null
+  - action: action_open_incident
 
-  - story: explain both email and frequency
-    steps:
-      - intent: subscribe
-      - action: newsletter_form
-      - active_loop: newsletter_form
-      - slot_was_set:
-          - requested_slot: email
-      - intent: explain
-      - action: utter_explain_email
-      - action: newsletter_form
-      - slot_was_set:
-          - requested_slot: frequency
-      - intent: explain
-      - action: utter_explain_frequency
-      - action: newsletter_form
+- story: incident status form interrupted
+  steps:
+  - intent: incident_status
+  - action: incident_status_form
+  - active_loop: incident_status_form
+  - intent: help
+  - action: utter_help
+  - action: incident_status_form
+  - active_loop: null
+  - action: action_check_incident_status
 
-  - story: beginning of flow
-    steps:
-      - intent: ask_how_i_feel
-      - action: utter_ask_user_question
-      - checkpoint: check_asked_question
+- story: incident status form interrupted
+  steps:
+  - intent: incident_status
+  - action: incident_status_form
+  - active_loop: incident_status_form
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+  - action: incident_status_form
+  - active_loop: null
+  - action: action_check_incident_status
 
-  - story: handle user affirm
-    steps:
-      - checkpoint: check_asked_question
-      - intent: mood_great
-      - action: utter_great
-      - checkpoint: check_flow_finished
+- story: incident status form switch to open incident
+  steps:
+  - intent: incident_status
+  - action: incident_status_form
+  - active_loop: incident_status_form
+  - or:
+    - intent: open_incident
+    - intent: password_reset
+    - intent: problem_email
+  - action: open_incident_form
+  - active_loop: open_incident_form
+  - active_loop: null
+  - action: action_open_incident
 
-  - story: handle user deny
-    steps:
-      - checkpoint: check_asked_question
-      - intent: mood_bad
-      - action: utter_bad
-      - checkpoint: check_flow_finished
-
-  - story: finish flow
-    steps:
-      - checkpoint: check_flow_finished
-      - intent: goodbye
-      - action: utter_goodbye
-
-  - story: confirm by affirm or thankyou
-    steps:
-      - intent: confirm
-      - action: utter_ask_confirm
-      - or:
-          - intent: affirm
-          - intent: thankyou
-      - action: utter_confirmed
-
-  - story: tell email
-    steps:
-      - intent: inform_email
-      - action: utter_email_back
-
-  - story: tell age
-    steps:
-      - intent: inform_age
-      - action: utter_age_back
+- story: open incident form switch to incident status form
+  steps:
+  - or:
+    - intent: open_incident
+    - intent: password_reset
+    - intent: problem_email
+  - action: open_incident_form
+  - active_loop: open_incident_form
+  - intent: incident_status
+  - action: incident_status_form
+  - active_loop: incident_status_form
+  - active_loop: null
+  - action: action_check_incident_status
