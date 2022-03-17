@@ -13,5 +13,5 @@ responses:
   - text: It is time for you to take a bath.
   utter_weather:
   - text: The weather outside is not so hot.
-  utter_good_bye:
+  utter_goodbye:
   - text: All right. You can come back and ask me again anytime, anyday!
