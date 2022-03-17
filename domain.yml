@@ -4,3 +4,14 @@ session_config:
   carry_over_slots_to_new_session: true
 intents:
 - greetings
+responses:
+  utter_greeting:
+  - text: Hello there! How can I help you today?
+  utter_feeling:
+  - text: I'm good. Thanks for asking.
+  utter_time:
+  - text: It is time for you to take a bath.
+  utter_weather:
+  - text: The weather outside is not so hot.
+  utter_good_bye:
+  - text: All right. You can come back and ask me again anytime, anyday!
