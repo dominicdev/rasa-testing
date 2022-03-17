@@ -1,5 +1,2 @@
 version: "2.0"
 nlu:
-- intent: greetings
-  examples: |
-    - Hello there! How can I help you today?
