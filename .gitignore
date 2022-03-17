@@ -1,0 +1,13 @@
+# Python files
+venv
+
+# Rasa files
+# exclude everything from models folder
+models/*
+# except for .gitkeep, so that folder itself is included
+!models/.gitkeep 
+results
+story_graph.dot
+
+# keep secret keys out of VCS
+.env

@@ -1,57 +1,109 @@
-# This files contains your custom actions which can be used to run
-# custom Python code.
-#
-# See this guide on how to implement these action:
-# https://rasa.com/docs/rasa/custom-actions
- 
-from typing import Any, Text, Dict, List
-import random
- 
-from rasa_sdk import Action, Tracker
+from typing import Text, List, Optional, Dict, Any
+from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
- 
-# computer_choice & determine_winner functions refactored from
-# https://github.com/thedanelias/rock-paper-scissors-python/blob/master/rockpaperscissors.py, MIT liscence
- 
-class ActionPlayRPS(Action):
-   
+from rasa_sdk import Tracker, Action
+from dotenv import load_dotenv
+import os
+import requests
+import json
+import uuid
+
+load_dotenv()
+
+
+def get_env_var(key):
+    env_var = os.getenv(key)
+    if env_var is None:
+        raise RuntimeError(f"Environment variable {key} was not found.")
+    return env_var
+
+
+airtable_api_key = get_env_var("AIRTABLE_API_KEY")
+base_id = get_env_var("BASE_ID")
+table_name = get_env_var("TABLE_NAME")
+
+
+def create_newsletter_record(email, frequency, notifications, can_ask_age, age):
+    request_url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {airtable_api_key}",
+    }
+
+    data = {
+        "fields": {
+            "Id": str(uuid.uuid4()),
+            "Email": email,
+            "Frequency": frequency,
+            "Notifications?": notifications,
+            "Can ask age?": can_ask_age,
+            "Age": age,
+        }
+    }
+
+    print(request_url)
+    print(headers)
+    print(json.dumps(data))
+
+    try:
+        response = requests.post(
+            request_url, headers=headers, data=json.dumps(data)
+        )
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+    print(f"Response status code: {response.status_code}")
+    return response
+
+
+class ValidateNewsletterForm(FormValidationAction):
     def name(self) -> Text:
-        return "action_play_rps"
- 
-    def computer_choice(self):
-        generatednum = random.randint(1,3)
-        if generatednum == 1:
-            computerchoice = "rock"
-        elif generatednum == 2:
-            computerchoice = "paper"
-        elif generatednum == 3:
-            computerchoice = "scissors"
-       
-        return(computerchoice)
- 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
- 
-        # play rock paper scissors
-        user_choice = tracker.get_slot("choice")
-        dispatcher.utter_message(text=f"You chose {user_choice}")
-        comp_choice = self.computer_choice()
-        dispatcher.utter_message(text=f"The computer chose {comp_choice}")
- 
-        if user_choice == "rock" and comp_choice == "scissors":
-            dispatcher.utter_message(text="Congrats, you won!")
-        elif user_choice == "rock" and comp_choice == "paper":
-            dispatcher.utter_message(text="The computer won this round.")
-        elif user_choice == "paper" and comp_choice == "rock":
-            dispatcher.utter_message(text="Congrats, you won!")
-        elif user_choice == "paper" and comp_choice == "scissors":
-            dispatcher.utter_message(text="The computer won this round.")
-        elif user_choice == "scissors" and comp_choice == "paper":
-            dispatcher.utter_message(text="Congrats, you won!")
-        elif user_choice == "scissors" and comp_choice == "rock":
-            dispatcher.utter_message(text="The computer won this round.")
-        else:
-            dispatcher.utter_message(text="It was a tie!")
- 
+        return "validate_newsletter_form"
+
+    async def required_slots(
+            self,
+            slots_mapped_in_domain: List[Text],
+            dispatcher: "CollectingDispatcher",
+            tracker: "Tracker",
+            domain: "DomainDict",
+    ) -> Optional[List[Text]]:
+        if not tracker.get_slot("can_ask_age"):
+            slots_mapped_in_domain.remove("age")
+
+        return slots_mapped_in_domain
+
+
+class SubmitNewsletterForm(Action):
+
+    def name(self) -> Text:
+        return "submit_newsletter_form"
+
+    async def run(
+            self, dispatcher, tracker: Tracker, domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        email = tracker.get_slot("email")
+        frequency = tracker.get_slot("frequency")
+        notifications = tracker.get_slot("notifications")
+        can_ask_age = tracker.get_slot("can_ask_age")
+        age = tracker.get_slot("age")
+
+        response = create_newsletter_record(email, frequency, notifications, can_ask_age, age)
+
+        dispatcher.utter_message("Thanks, your answers have been recorded!")
+
         return []
+
+# class ActionSayStuff(Action):
+#     def name(self) -> Text:
+#         return "action_say_stuff"
+#
+#     def run(self,
+#             dispatcher: CollectingDispatcher,
+#             tracker: Tracker,
+#             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         dispatcher.utter_message("Stuff")
+#
+#         return []
