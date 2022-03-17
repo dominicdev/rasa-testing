@@ -3,9 +3,3 @@ session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
 intents:
-- greeting
-responses:
-  utter_greetings:
-  - text: Hello there! How can I help you today?
-  utter_good_bye:
-  - text: All right. You can come back and ask me again anytime, anyday!
