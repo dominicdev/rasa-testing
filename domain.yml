@@ -4,3 +4,6 @@ session_config:
   carry_over_slots_to_new_session: true
 intents:
 - greetings
+responses:
+  utter_greeting:
+  - text: Hello there! How can I help you today?
